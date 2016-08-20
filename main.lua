@@ -1,20 +1,23 @@
 debug = true
 
-player = {x = 50, y = 500, speed = 400, img = nil, alive = true, score = 0, level = 1, asteroids = 0 , skin = 1 }
-drop = { speed = 250, img = nil, interval = 0.2, intervalTimer = 0, sound = nil}
+player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
+drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
 drops = {}
-flame = { speed = 300, img = nil, interval = 3.0, intervalTimer = 0 }
+flame = { speed = 300, interval = 3.0, intervalTimer = 0 }
 flames = {}
 getroffen = {img = nil }
 boom = { timer = 25, img = nil, interval = 3.0, intervalTimer = 0, sound = nil }
 booms = {}
-backgrounds = {}
 schwierigkeiten = {}
-skin = {}
+skin = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
+skin1 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
+skin2 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 isMenu = true
+isSkins = false
 isPlaying = false
 isGameOver = false
 title = {img = nil}
+
 menuOptions = 3
 menuOptionWith = 200
 menuOptionGutter = (love.graphics.getWidth() - menuOptions * menuOptionWith) / (menuOptions + 1)
@@ -28,6 +31,18 @@ table.insert(menuTable, menuEntryStart)
 menuEntryExpert = {x = menuOptionGutter * 3 + (3 - 1) * menuOptionWith,y = 300, width = menuOptionWith, height = 100,
 	text = "Expert Mode", offsetx = 50, offsety = 45}
 table.insert(menuTable, menuEntryExpert)
+
+skinOptions = 2
+skinOptionWith = 200
+skinOptionGutter = (love.graphics.getWidth() - skinOptions * skinOptionWith) / (skinOptions + 1)
+skinTable = {}
+skin1Entry = {x = skinOptionGutter * 1 + (1 - 1) * skinOptionWith,y = 300, width = skinOptionWith, height = 100,
+	text = "Skin 1", offsetx = 50, offsety = 45 }
+table.insert(skinTable, skin1Entry)
+skin2Entry = {x = skinOptionGutter * 2 + (2 - 1) * skinOptionWith,y = 300, width = skinOptionWith, height = 100,
+	text = "Skin 2", offsetx = 50, offsety = 45}
+table.insert(skinTable, skin2Entry)
+
 levelUp = {  img = nil, timer = 50, x = nil , y = love.graphics.getHeight()/2 }
 table.insert(schwierigkeiten, {playerSpeed = 400, flameSpeed = 100, flameInterval = 3.0} ) --level1
 table.insert(schwierigkeiten, {playerSpeed = 400, flameSpeed = 120, flameInterval = 2.8} )--level2
@@ -42,19 +57,25 @@ table.insert(schwierigkeiten, {playerSpeed = 600, flameSpeed = 300, flameInterva
 table.insert(schwierigkeiten, {playerSpeed = 650, flameSpeed = 500, flameInterval = 0.1} )--der Tod muhahahahahahahahahahaha
 
 function love.load(arg)
-	player.img = love.graphics.newImage('assets/Fireboat-klein.png')
-	drop.img = love.graphics.newImage('assets/splash-klein.png')
-	flame.img = love.graphics.newImage('assets/asteroid.png')
+	skin1.playerImg = love.graphics.newImage('Skin1/Player.png')
+	skin1.dropImg = love.graphics.newImage('Skin1/Drop.png')
+	skin1.flameImg = love.graphics.newImage('Skin1/Flame.png')
+	skin2.playerImg = love.graphics.newImage('Skin2/Player.png')
+	skin2.dropImg = love.graphics.newImage('Skin2/Drop.png')
+	skin2.flameImg = love.graphics.newImage('Skin2/Flame.png')
 	boom.img = love.graphics.newImage('assets/explosion.png')
 	getroffen.img = love.graphics.newImage('assets/Getroffen.png')
 	levelUp.img = love.graphics.newImage('assets/level-up.png')
 	title.img = love.graphics.newImage('assets/title.png')
 	levelUp.x = love.graphics.getWidth()/2 -levelUp.img:getWidth()/2
 	levelUp.y = love.graphics.getHeight()/2 -levelUp.img:getHeight()/2 -100
-	table.insert(backgrounds, { img = love.graphics.newImage('assets/space-universe background.jpg') })
-	table.insert(backgrounds, { img = love.graphics.newImage('assets/level2.jpg') })
-	table.insert(backgrounds, { img = love.graphics.newImage('assets/level3.jpg') })
-	table.insert(backgrounds, { img = love.graphics.newImage('assets/level4.jpg') })
+	table.insert(skin1.backgrounds, { img = love.graphics.newImage('skin1/level1.jpg') })
+	table.insert(skin1.backgrounds, { img = love.graphics.newImage('skin1/level2.jpg') })
+	table.insert(skin1.backgrounds, { img = love.graphics.newImage('skin1/level3.jpg') })
+	table.insert(skin1.backgrounds, { img = love.graphics.newImage('skin1/level4.jpg') })
+	table.insert(skin2.backgrounds, { img = love.graphics.newImage('skin2/level1.png') })
+	table.insert(skin2.backgrounds, { img = love.graphics.newImage('skin2/level2.jpg') })
+	table.insert(skin2.backgrounds, { img = love.graphics.newImage('skin2/level3.jpg') })
 	backgroundMusic = love.audio.newSource('assets/BackgroundMusic.mp3',"stream")
 	backgroundMusic:setLooping(true)
 	backgroundMusic:setVolume(0.2)
@@ -66,6 +87,8 @@ function love.load(arg)
 	applauseSound = love.audio.newSource('assets/Applause.wav',"static")
 --	table.insert(backgrounds, { img = love.graphics.newImage('assets/space-universe background.jpg') })
 	love.audio.play(backgroundMusic)
+	skin = skin1
+--	require ("LoveFrames")
 end
 
 function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
@@ -87,19 +110,30 @@ function love.draw()
 		end
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
 	end
+
+	if isSkins then
+		for i, skinEntry in ipairs(skinTable) do
+			love.graphics.rectangle("line", skinEntry.x, skinEntry.y, skinEntry.width, skinEntry.height)
+			love.graphics.print(skinEntry.text,skinEntry.x +  skinEntry.offsetx,skinEntry.y + skinEntry.offsety)
+		end
+		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
+	end
+
 	if isPlaying or isGameOver then
-		love.graphics.draw( backgrounds [(player.level -1) % #backgrounds +1 ].img, 0,0)
+		local background = skin.backgrounds [(player.level -1) % #skin.backgrounds +1 ].img
+		-- / love.graphics:getWidth(),  / love.graphics:getHeight()
+		love.graphics.draw( background, 0,0, 0, love.graphics:getWidth()/background:getWidth(),  love.graphics:getHeight()/background:getHeight())
 		for i, drop in ipairs(drops) do
-			love.graphics.draw(drop.img, drop.x, drop.y)
+			love.graphics.draw(skin.dropImg, drop.x, drop.y)
 		end
 		for i, flame in ipairs(flames) do
-			love.graphics.draw(flame.img, flame.x, flame.y)
+			love.graphics.draw(skin.flameImg, flame.x, flame.y)
 		end
 		for i, boom in ipairs(booms) do
 			love.graphics.draw(boom.img, boom.x, boom.y)
 		end
 		if player.alive then
-			love.graphics.draw(player.img, player.x, player.y)
+			love.graphics.draw(skin.playerImg, player.x, player.y)
 		else
 			love.graphics.draw(getroffen.img, player.x, player.y)
 			love.graphics.print("Drücke 'n' für den Neustart oder 'm' fürs Menü", love.graphics:getWidth()/2-50, love.graphics.getHeight()/2-50)
@@ -107,6 +141,7 @@ function love.draw()
 		love.graphics.print("PUNKTE: ".. tostring(player.score), 10, 10)
 		love.graphics.print("LEVEL: ".. tostring(player.level), 10, 25)
 	end
+--	loveframes.update(dt)
 end
 
 
@@ -150,8 +185,8 @@ function love.update(dt)
 
 		for i, flame in ipairs(flames) do
 			for j, drop in ipairs(drops) do
-				if checkCollision(flame.x, flame.y, flame.img:getWidth(), flame.img:getHeight(),
-				 drop.x, drop.y, drop.img:getWidth(), drop.img:getHeight()) then
+				if checkCollision(flame.x, flame.y, skin.flameImg:getWidth(), skin.flameImg:getHeight(),
+				 drop.x, drop.y, skin.dropImg:getWidth(), skin.dropImg:getHeight()) then
 					 table.remove(drops, j)
 					 table.remove(flames, i)
 					 player.score = player.score +10
@@ -174,8 +209,8 @@ function love.update(dt)
 		end
 
 		for i, flame in ipairs(flames) do
-			if checkCollision(flame.x, flame.y, flame.img:getWidth(), flame.img:getHeight(),
-				player.x, player.y, player.img:getWidth(), player.img:getHeight())
+			if checkCollision(flame.x, flame.y, skin.flameImg:getWidth(), skin.flameImg:getHeight(),
+				player.x, player.y, skin.playerImg:getWidth(), skin.playerImg:getHeight())
 				and player.alive then
 					--table.remove(flames, i)
 					for j, flame in ipairs(flames) do
@@ -190,9 +225,9 @@ function love.update(dt)
 			if love.keyboard.isDown('left', 'a') then
 				player.x = math.max(player.x - (schwierigkeiten[player.level].playerSpeed * dt), 0)
 			elseif love.keyboard.isDown('right', 'd') then
-				player.x = math.min(player.x + (schwierigkeiten[player.level].playerSpeed * dt),love.graphics.getWidth() - player.img:getWidth())
+				player.x = math.min(player.x + (schwierigkeiten[player.level].playerSpeed * dt),love.graphics.getWidth() - skin.playerImg:getWidth())
 			elseif love.keyboard.isDown('space') and drop.intervalTimer < 0  then
-				newDrop = { x = player.x + (player.img:getWidth()/2), y = player.y, speed = drop.speed, img = drop.img }
+				newDrop = { x = player.x + (skin.playerImg:getWidth()/2), y = player.y, speed = drop.speed, img = drop.img }
 				table.insert(drops, newDrop)
 				drop.sound:play()
 				drop.intervalTimer = drop.interval
@@ -218,27 +253,47 @@ function love.update(dt)
 				table.remove(drops, i)
 			end
 		end
+		--loveframes.draw()
 end
 function love.mousereleased(x, y, button, istouch)
 --	io.write('Mausdrücker x = '..x..' y = '..y)
-	if x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntryStart.width and y >= menuEntryStart.y and y <= menuEntryStart.y + menuEntryStart.height then
+	--Skins
+	if isMenu and x >= menuEntrySkin.x and x <= menuEntrySkin.x + menuEntrySkin.width and y >= menuEntrySkin.y and y <= menuEntrySkin.y + menuEntrySkin.height then
+		isMenu = false
+		isSkins = true
+	--Start
+elseif isMenu and x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntryStart.width and y >= menuEntryStart.y and y <= menuEntryStart.y + menuEntryStart.height then
 		player.alive = true
 		player.score = 0
 		player.level = 1
 		player.asteroids = 0
 		flame.interval = 3.0
 		isMenu = false
+		isSkins = false
 		isPlaying = true
 		isGameOver = false
 	--	love.audio.play(backgroundMusic)
-	elseif x >= menuEntryExpert.x and x <= menuEntryExpert.x + menuEntryExpert.width and y >= menuEntryExpert.y and y <= menuEntryExpert.y + menuEntryExpert.height then
+	--expert Mode
+elseif isMenu and x >= menuEntryExpert.x and x <= menuEntryExpert.x + menuEntryExpert.width and y >= menuEntryExpert.y and y <= menuEntryExpert.y + menuEntryExpert.height then
 		player.alive = true
 		player.score = 0
 		player.level = 11
 		player.asteroids = 0
 		flame.interval = 3.0
 		isMenu = false
+		isSkins = false
 		isPlaying = true
 		isGameOver = false
+	--	loveframes.mousereleased(x, y, button)
+	--expert Mode
+elseif isSkins and x >= skin1Entry.x and x <= skin1Entry.x + skin1Entry.width and y >= skin1Entry.y and y <= skin1Entry.y + skin1Entry.height then
+	isMenu = true
+	isSkins = false
+	skin = skin1
+elseif isSkins and x >= skin2Entry.x and x <= skin2Entry.x + skin2Entry.width and y >= skin2Entry.y and y <= skin2Entry.y + skin2Entry.height then
+	isMenu = true
+	isSkins = false
+	skin = skin2
+
 	end
 end
