@@ -65,6 +65,7 @@ function love.load(arg)
 	boom.sound:setVolume(0.5)
 	applauseSound = love.audio.newSource('assets/Applause.wav',"static")
 --	table.insert(backgrounds, { img = love.graphics.newImage('assets/space-universe background.jpg') })
+	love.audio.play(backgroundMusic)
 end
 
 function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
@@ -229,7 +230,7 @@ function love.mousereleased(x, y, button, istouch)
 		isMenu = false
 		isPlaying = true
 		isGameOver = false
-		love.audio.play(backgroundMusic)
+	--	love.audio.play(backgroundMusic)
 	elseif x >= menuEntryExpert.x and x <= menuEntryExpert.x + menuEntryExpert.width and y >= menuEntryExpert.y and y <= menuEntryExpert.y + menuEntryExpert.height then
 		player.alive = true
 		player.score = 0
