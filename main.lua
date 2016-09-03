@@ -18,8 +18,9 @@ isMenu = false
 isSkins = false
 isPlaying = false
 isGameOver = false
+--isWinning = false
 title = {img = nil}
-progressBar = {img = nil, timeToLive = 3, percentComplete = 0, bars = 10, gutter = 7}
+progressBar = {img = nil, timeToLive = 5, percentComplete = 0, bars = 10, gutter = 7}
 
 menuOptions = 3
 menuOptionWith = 200
@@ -57,7 +58,7 @@ for i = 0, 30 do
  		flameInterval = 3 - i * 0.1})
 end
 table.insert(schwierigkeiten, {playerSpeed = 700, flameSpeed = 700, flameInterval = 0.1} )--level31
-table.insert(schwierigkeiten, {playerSpeed = 700, flameSpeed = 1000, flameInterval = 0.0} )--level32
+
 function love.load(arg)
 	skin1.playerImg = love.graphics.newImage('Skin1/Player.png')
 	skin1.dropImg = love.graphics.newImage('Skin1/Drop.png')
@@ -70,6 +71,7 @@ function love.load(arg)
 	skin3.flameImg = love.graphics.newImage('skin3/Flame.png')
 	boom.img = love.graphics.newImage('assets/explosion.png')
 	getroffen.img = love.graphics.newImage('assets/Getroffen.png')
+	--gewonnen.img = love.graphics.newImage('assets/Gewonnen.png')
 	levelUp.img = love.graphics.newImage('assets/level-up.png')
 	title.img = love.graphics.newImage('assets/title.png')
 	progressBar.img = love.graphics.newImage('assets/progressBar.png')
@@ -172,6 +174,8 @@ function love.draw()
 		love.graphics.print("PUNKTE: ".. tostring(player.score), 10, 10)
 		love.graphics.print("LEVEL: ".. tostring(player.level), 10, 25)
 	end
+	--if player.level = 32 then
+	--	love.graphics.draw(gewonnen.img)
 end
 
 
@@ -285,12 +289,21 @@ function love.update(dt)
 			end
 		end
 end
+
+
+function isButtonClicked(menuItem, x, y)
+	 	return x >= menuItem.x and x <= menuItem.x + menuItem.width and y >= menuItem.y and y <= menuItem.y + menuItem.height
+end
+
+
 function love.mousereleased(x, y, button, istouch)
-	if isMenu and x >= menuEntrySkin.x and x <= menuEntrySkin.x + menuEntrySkin.width and y >= menuEntrySkin.y and y <= menuEntrySkin.y + menuEntrySkin.height then
-		isMenu = false
-		isSkins = true
+	if isMenu and isButtonClicked( menuEntrySkin, x, y) then
+			--if isMenu and x >= menuEntrySkin.x and x <= menuEntrySkin.x + menuEntrySkin.width and y >= menuEntrySkin.y and y <= menuEntrySkin.y + menuEntrySkin.height then
+			isMenu = false
+			isSkins = true
 	--Start
-elseif isMenu and x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntryStart.width and y >= menuEntryStart.y and y <= menuEntryStart.y + menuEntryStart.height then
+--elseif isMenu and x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntryStart.width and y >= menuEntryStart.y and y <= menuEntryStart.y + menuEntryStart.height then
+elseif isMenu and isButtonClicked( menuEntryStart, x, y) then
 		player.alive = true
 		player.score = 0
 		player.level = 1
@@ -301,7 +314,7 @@ elseif isMenu and x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntrySta
 		isPlaying = true
 		isGameOver = false
 	--expert Mode
-elseif isMenu and x >= menuEntryExpert.x and x <= menuEntryExpert.x + menuEntryExpert.width and y >= menuEntryExpert.y and y <= menuEntryExpert.y + menuEntryExpert.height then
+elseif isMenu and isButtonClicked( menuEntryExpert, x, y) then
 		player.alive = true
 		player.score = 0
 		player.level = 31
@@ -312,15 +325,15 @@ elseif isMenu and x >= menuEntryExpert.x and x <= menuEntryExpert.x + menuEntryE
 		isPlaying = true
 		isGameOver = false
 	--expert Mode
-elseif isSkins and x >= skin1Entry.x and x <= skin1Entry.x + skin1Entry.width and y >= skin1Entry.y and y <= skin1Entry.y + skin1Entry.height then
+elseif isSkins and isButtonClicked( skin1Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin1
-elseif isSkins and x >= skin2Entry.x and x <= skin2Entry.x + skin2Entry.width and y >= skin2Entry.y and y <= skin2Entry.y + skin2Entry.height then
+elseif isSkins and isButtonClicked( skin2Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin2
-elseif isSkins and x >= skin3Entry.x and x <= skin3Entry.x + skin3Entry.width and y >= skin3Entry.y and y <= skin3Entry.y + skin3Entry.height then
+elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin3
