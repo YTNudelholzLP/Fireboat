@@ -63,12 +63,15 @@ function love.load(arg)
 	skin1.playerImg = love.graphics.newImage('Skin1/Player.png')
 	skin1.dropImg = love.graphics.newImage('Skin1/Drop.png')
 	skin1.flameImg = love.graphics.newImage('Skin1/Flame.png')
+	skin1.backgroundMusic = love.audio.newSource('skin1/BackgroundMusic.mp3',"stream")
 	skin2.playerImg = love.graphics.newImage('Skin2/Player.png')
 	skin2.dropImg = love.graphics.newImage('Skin2/Drop.png')
 	skin2.flameImg = love.graphics.newImage('Skin2/Flame.png')
+	skin2.backgroundMusic = love.audio.newSource('skin2/ElectricTandem.mp3',"stream")
 	skin3.playerImg = love.graphics.newImage('skin3/Player.png')
 	skin3.dropImg = love.graphics.newImage('skin3/Drop.png')
 	skin3.flameImg = love.graphics.newImage('skin3/Flame.png')
+	skin3.backgroundMusic = love.audio.newSource('skin3/Jazztalk.mp3',"stream")
 	boom.img = love.graphics.newImage('assets/explosion.png')
 	getroffen.img = love.graphics.newImage('assets/Getroffen.png')
 	--gewonnen.img = love.graphics.newImage('assets/Gewonnen.png')
@@ -87,7 +90,7 @@ function love.load(arg)
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level1.jpg') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level2.png') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level3.jpg') })
-	backgroundMusic = love.audio.newSource('assets/BackgroundMusic.mp3',"stream")
+	backgroundMusic = love.audio.newSource('assets/SloMo.mp3',"stream")
 	backgroundMusic:setLooping(true)
 	backgroundMusic:setVolume(0.2)
 	gameOverSound = love.audio.newSource('assets/GameOver.wav',"static")
@@ -298,11 +301,9 @@ end
 
 function love.mousereleased(x, y, button, istouch)
 	if isMenu and isButtonClicked( menuEntrySkin, x, y) then
-			--if isMenu and x >= menuEntrySkin.x and x <= menuEntrySkin.x + menuEntrySkin.width and y >= menuEntrySkin.y and y <= menuEntrySkin.y + menuEntrySkin.height then
 			isMenu = false
 			isSkins = true
 	--Start
---elseif isMenu and x >= menuEntryStart.x and x <= menuEntryStart.x + menuEntryStart.width and y >= menuEntryStart.y and y <= menuEntryStart.y + menuEntryStart.height then
 elseif isMenu and isButtonClicked( menuEntryStart, x, y) then
 		player.alive = true
 		player.score = 0
@@ -313,6 +314,8 @@ elseif isMenu and isButtonClicked( menuEntryStart, x, y) then
 		isSkins = false
 		isPlaying = true
 		isGameOver = false
+		love.audio.stop()
+		skin.backgroundMusic:play()
 	--expert Mode
 elseif isMenu and isButtonClicked( menuEntryExpert, x, y) then
 		player.alive = true
@@ -329,10 +332,12 @@ elseif isSkins and isButtonClicked( skin1Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin1
+
 elseif isSkins and isButtonClicked( skin2Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin2
+
 elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 	isMenu = true
 	isSkins = false
