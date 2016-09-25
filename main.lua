@@ -1,4 +1,4 @@
-debug = true
+debug = false
 
 player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
 drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
@@ -21,19 +21,22 @@ isGameOver = false
 --isWinning = false
 title = {img = nil}
 progressBar = {img = nil, timeToLive = 5, percentComplete = 0, bars = 10, gutter = 7}
+if debug then
+	progressBar.timeToLive = 0.0001
+end
 
 menuOptions = 3
 menuOptionWith = 200
 menuOptionGutter = (love.graphics.getWidth() - menuOptions * menuOptionWith) / (menuOptions + 1)
 menuTable = {}
 menuEntrySkin = {x = menuOptionGutter * 1 + (1 - 1) * menuOptionWith,y = 300, width = menuOptionWith, height = 100,
-	text = "Skins", offsetx = 50, offsety = 45 }
+	text = "Skins", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 255,backgroundColorGreen = 0, backgroundColorBlue = 0 }
 table.insert(menuTable, menuEntrySkin)
 menuEntryStart = {x = menuOptionGutter * 2 + (2 - 1) * menuOptionWith,y = 300, width = menuOptionWith, height = 100,
-	text = "Start", offsetx = 50, offsety = 45}
+	text = "Start", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 0,backgroundColorGreen = 255, backgroundColorBlue = 0 }
 table.insert(menuTable, menuEntryStart)
 menuEntryExpert = {x = menuOptionGutter * 3 + (3 - 1) * menuOptionWith,y = 300, width = menuOptionWith, height = 100,
-	text = "Expert Mode", offsetx = 50, offsety = 45}
+	text = "Expert Mode", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 0,backgroundColorGreen = 0, backgroundColorBlue = 255  }
 table.insert(menuTable, menuEntryExpert)
 
 skinOptions = 3
@@ -41,12 +44,12 @@ skinOptionWith = 200
 skinOptionGutter = (love.graphics.getWidth() - skinOptions * skinOptionWith) / (skinOptions + 1)
 skinTable = {}
 skin1Entry = {x = skinOptionGutter * 1 + (1 - 1) * skinOptionWith,y = 300, width = skinOptionWith, height = 100,
-	text = "Skin 1", offsetx = 50, offsety = 45 }
+	text = "Skin 1", offsetx = 50, offsety = 45, backgroundImg = nil }
 table.insert(skinTable, skin1Entry)
 skin2Entry = {x = skinOptionGutter * 2 + (2 - 1) * skinOptionWith,y = 300, width = skinOptionWith, height = 100,
-	text = "Skin 2", offsetx = 50, offsety = 45}
+	text = "Skin 2", offsetx = 50, offsety = 45, backgroundImg = nil }
 	skin3Entry = {x = skinOptionGutter * 3 + (3 - 1) * skinOptionWith,y = 300, width = skinOptionWith, height = 100,
-		text = "Skin 3", offsetx = 50, offsety = 45}
+		text = "Skin 3", offsetx = 50, offsety = 45, backgroundImg = nil }
 table.insert(skinTable, skin2Entry)
 table.insert(skinTable, skin3Entry)
 levelUp = {  img = nil, timer = 50, x = nil , y = love.graphics.getHeight()/2 }
@@ -100,6 +103,9 @@ function love.load(arg)
 	boom.sound:setVolume(0.5)
 	applauseSound = love.audio.newSource('assets/Applause.wav',"static")
 	love.audio.play(backgroundMusic)
+	skin1Entry.backgroundImg = skin1.backgrounds[1].img
+	skin2Entry.backgroundImg = skin2.backgrounds[1].img
+	skin3Entry.backgroundImg = skin3.backgrounds[1].img
 	skin = skin1
 end
 
@@ -131,6 +137,20 @@ function drawProgressBar()
 	end
 end
 
+function drawMenuButton(menuEntry)
+	if menuEntry.backgroundImg ~= nil then
+		love.graphics.draw(menuEntry.backgroundImg, menuEntry.x, menuEntry.y, 0,  menuEntry.width/menuEntry.backgroundImg:getWidth(),
+	 		menuEntry.height/menuEntry.backgroundImg:getHeight())
+	else
+		love.graphics.setColor(menuEntry.backgroundColorRed, menuEntry.backgroundColorGreen, menuEntry.backgroundColorBlue)
+		love.graphics.rectangle("fill", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
+		love.graphics.setColor(255, 255, 255, 255)
+	end
+	love.graphics.rectangle("line", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
+	love.graphics.print(menuEntry.text,menuEntry.x +  menuEntry.offsetx,menuEntry.y + menuEntry.offsety)
+
+end
+
 function love.draw()
 	if isMenu then
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
@@ -142,16 +162,14 @@ function love.draw()
 	love.graphics.setColor(255, 255, 255, 255)
 	if isMenu then
 		for i, menuEntry in ipairs(menuTable) do
-			love.graphics.rectangle("line", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
-			love.graphics.print(menuEntry.text,menuEntry.x +  menuEntry.offsetx,menuEntry.y + menuEntry.offsety)
+			drawMenuButton(menuEntry)
 		end
 
 	end
 
 	if isSkins then
 		for i, skinEntry in ipairs(skinTable) do
-			love.graphics.rectangle("line", skinEntry.x, skinEntry.y, skinEntry.width, skinEntry.height)
-			love.graphics.print(skinEntry.text,skinEntry.x +  skinEntry.offsetx,skinEntry.y + skinEntry.offsety)
+			drawMenuButton(skinEntry)
 		end
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
 	end
