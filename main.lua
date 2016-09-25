@@ -177,8 +177,6 @@ function love.draw()
 		love.graphics.print("PUNKTE: ".. tostring(player.score), 10, 10)
 		love.graphics.print("LEVEL: ".. tostring(player.level), 10, 25)
 	end
-	--if player.level = 32 then
-	--	love.graphics.draw(gewonnen.img)
 end
 
 
@@ -342,6 +340,5 @@ elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 	isMenu = true
 	isSkins = false
 	skin = skin3
-
 	end
 end
