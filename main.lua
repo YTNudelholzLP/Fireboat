@@ -260,14 +260,11 @@ function love.update(dt)
 		if player.alive then
 			if love.keyboard.isDown('left', 'a') then
 				player.x = math.max(player.x - (schwierigkeiten[player.level].playerSpeed * dt), 0)
-			elseif love.keyboard.isDown('right', 'd') then
-				player.x = math.min(player.x + (schwierigkeiten[player.level].playerSpeed * dt),love.graphics.getWidth() - skin.playerImg:getWidth())
-			elseif love.keyboard.isDown('space') and drop.intervalTimer < 0  then
-				newDrop = { x = player.x + (skin.playerImg:getWidth()/2), y = player.y, speed = drop.speed, img = drop.img }
-				table.insert(drops, newDrop)
-				drop.sound:play()
-				drop.intervalTimer = drop.interval
 			end
+			if love.keyboard.isDown('right', 'd') then
+				player.x = math.min(player.x + (schwierigkeiten[player.level].playerSpeed * dt),love.graphics.getWidth() - skin.playerImg:getWidth())
+			end
+
 		else
 		 	if love.keyboard.isDown('n') then
 				player.alive = true
@@ -281,6 +278,13 @@ function love.update(dt)
 				isPlaying = false
 				isGameOver = false
 			end
+		end
+
+		if love.keyboard.isDown('space') and drop.intervalTimer < 0  then
+			newDrop = { x = player.x + (skin.playerImg:getWidth()/2), y = player.y, speed = drop.speed, img = drop.img }
+			table.insert(drops, newDrop)
+			drop.sound:play()
+			drop.intervalTimer = drop.interval
 		end
 
 		for i, drop in ipairs(drops) do
