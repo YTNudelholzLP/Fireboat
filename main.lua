@@ -1,4 +1,10 @@
-debug = false
+debug = true
+
+local name = require "Slider"
+volumeSlider = Slider:new {}
+tempSlider = Slider:new {}
+tempSlider.y = 200
+tempSlider.position = 0.75
 
 player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
 drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
@@ -18,6 +24,7 @@ isMenu = false
 isSkins = false
 isPlaying = false
 isGameOver = false
+isSettings = false
 --isWinning = false
 title = {img = nil}
 progressBar = {img = nil, timeToLive = 5, percentComplete = 0, bars = 10, gutter = 7}
@@ -38,6 +45,17 @@ table.insert(menuTable, menuEntryStart)
 menuEntryExpert = {x = menuOptionGutter * 3 + (3 - 1) * menuOptionWith,y = 300, width = menuOptionWith, height = 100,
 	text = "Expert Mode", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 0,backgroundColorGreen = 0, backgroundColorBlue = 255  }
 table.insert(menuTable, menuEntryExpert)
+
+settingsButton = {x = 100, y = 100, img = nil, width = 150, height = 150 }
+function  settingsButton:draw()
+		love.graphics.draw(self.img, self.x, self.y, 0, self.width/self.img:getWidth(),self.height/self.img:getHeight()  )
+end
+function settingsButton:mousereleased(x, y, button, istouch)
+		if isMenu then
+				isMenu = false
+				isSettings = true
+		end
+end
 
 skinOptions = 3
 skinOptionWith = 200
@@ -80,6 +98,7 @@ function love.load(arg)
 	--gewonnen.img = love.graphics.newImage('assets/Gewonnen.png')
 	levelUp.img = love.graphics.newImage('assets/level-up.png')
 	title.img = love.graphics.newImage('assets/title.png')
+
 	progressBar.img = love.graphics.newImage('assets/progressBar.png')
 	levelUp.x = love.graphics.getWidth()/2 -levelUp.img:getWidth()/2
 	levelUp.y = love.graphics.getHeight()/2 -levelUp.img:getHeight()/2 -100
@@ -93,6 +112,7 @@ function love.load(arg)
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level1.jpg') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level2.png') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level3.jpg') })
+	settingsButton.img = love.graphics.newImage('assets/Settings-Button.png')
 	backgroundMusic = love.audio.newSource('assets/SloMo.mp3',"stream")
 	backgroundMusic:setLooping(true)
 	backgroundMusic:setVolume(0.2)
@@ -154,6 +174,7 @@ end
 function love.draw()
 	if isMenu then
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
+		settingsButton:draw()
 	end
 
 	if isLoading then
@@ -172,6 +193,13 @@ function love.draw()
 			drawMenuButton(skinEntry)
 		end
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
+	end
+	if isSettings then
+		love.graphics.print('Settings screen', 100, 100)
+		love.graphics.print('Volume', 100, 150)
+		love.graphics.print('Screen size', 100, 200)
+	  volumeSlider:draw()
+	--	tempSlider:draw()
 	end
 
 	if isPlaying or isGameOver then
@@ -202,7 +230,8 @@ function love.update(dt)
 		if love.keyboard.isDown('escape') then
 			love.event.push('quit')
 		end
-
+		volumeSlider:update(dt)
+	--	tempSlider:update(dt)
 		drop.intervalTimer = drop.intervalTimer - (1 * dt)
 		flame.intervalTimer = flame.intervalTimer - (1 * dt)
 		if isLoading then
@@ -318,6 +347,13 @@ function isButtonClicked(menuItem, x, y)
 	 	return x >= menuItem.x and x <= menuItem.x + menuItem.width and y >= menuItem.y and y <= menuItem.y + menuItem.height
 end
 
+function love.mousepressed(x, y, button)
+	if isSettings then
+		volumeSlider:mousepressed(x, y, button)
+		--tempSlider:mousepressed(x, y, button)
+	end
+end
+
 
 function love.mousereleased(x, y, button, istouch)
 	if isMenu and isButtonClicked( menuEntrySkin, x, y) then
@@ -363,4 +399,8 @@ elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 	isSkins = false
 	skin = skin3
 	end
+
+		settingsButton:mousereleased(x, y, button, istouch)
+volumeSlider:mousereleased(x, y, button, istouch)
+tempSlider:mousereleased(x, y, button, istouch)
 end
