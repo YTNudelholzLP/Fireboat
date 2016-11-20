@@ -1,7 +1,10 @@
-debug = true
+debug = false
 
-local name = require "Slider"
+local slider = require "Slider"
 volumeSlider = Slider:new {}
+local button = require "Button"
+
+
 
 function volumeSlider:updated(newPosition)
 	backgroundMusic:setVolume(newPosition)
@@ -62,6 +65,16 @@ function settingsButton:mousereleased(x, y, button, istouch)
 				isSettings = true
 		end
 end
+settingsBackButton = Button:new {}
+settingsBackButton.x = 10
+settingsBackButton.y = 10
+settingsBackButton.width = 80
+settingsBackButton.height = 80
+settingsBackButton.text = ''
+function settingsButton:clicked()
+				isMenu = true
+				isSettings = false
+end
 
 skinOptions = 3
 skinOptionWith = 200
@@ -119,6 +132,7 @@ function love.load(arg)
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level2.png') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level3.jpg') })
 	settingsButton.img = love.graphics.newImage('assets/Settings-Button.png')
+	settingsBackButton.backgroundImg = love.graphics.newImage('assets/back_button.png')
 	backgroundMusic = love.audio.newSource('assets/SloMo.mp3',"stream")
 	backgroundMusic:setLooping(true)
 	backgroundMusic:setVolume(0.2)
@@ -164,18 +178,19 @@ function drawProgressBar()
 end
 
 function drawMenuButton(menuEntry)
-	if menuEntry.backgroundImg ~= nil then
-		love.graphics.draw(menuEntry.backgroundImg, menuEntry.x, menuEntry.y, 0,  menuEntry.width/menuEntry.backgroundImg:getWidth(),
-	 		menuEntry.height/menuEntry.backgroundImg:getHeight())
-	else
-		love.graphics.setColor(menuEntry.backgroundColorRed, menuEntry.backgroundColorGreen, menuEntry.backgroundColorBlue)
-		love.graphics.rectangle("fill", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
-		love.graphics.setColor(255, 255, 255, 255)
-	end
-	love.graphics.rectangle("line", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
-	love.graphics.print(menuEntry.text,menuEntry.x +  menuEntry.offsetx,menuEntry.y + menuEntry.offsety)
+       if menuEntry.backgroundImg ~= nil then
+               love.graphics.draw(menuEntry.backgroundImg, menuEntry.x, menuEntry.y, 0,  menuEntry.width/menuEntry.backgroundImg:getWidth(),
+                       menuEntry.height/menuEntry.backgroundImg:getHeight())
+       else
+               love.graphics.setColor(menuEntry.backgroundColorRed, menuEntry.backgroundColorGreen, menuEntry.backgroundColorBlue)
+               love.graphics.rectangle("fill", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
+               love.graphics.setColor(255, 255, 255, 255)
+       end
+       love.graphics.rectangle("line", menuEntry.x, menuEntry.y, menuEntry.width, menuEntry.height)
+       love.graphics.print(menuEntry.text,menuEntry.x +  menuEntry.offsetx,menuEntry.y + menuEntry.offsety)
 
 end
+
 
 function love.draw()
 	if isMenu then
@@ -206,6 +221,7 @@ function love.draw()
 		love.graphics.print('Screen size', 100, 200)
 	  volumeSlider:draw()
 	--	tempSlider:draw()
+	settingsBackButton:draw()
 	end
 
 	if isPlaying or isGameOver then
@@ -409,4 +425,5 @@ elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 		settingsButton:mousereleased(x, y, button, istouch)
 volumeSlider:mousereleased(x, y, button, istouch)
 --tempSlider:mousereleased(x, y, button, istouch)
+settingsBackButton:mousereleased(x, y, button, istouch)
 end
