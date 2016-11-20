@@ -1,6 +1,6 @@
 Slider = {x = 400, y = 110, width = 300, height = 80, barHeight = 20, position = 0.4, activeColorRed = 130, activeColorGreen = 149, activeColorBlue = 176,
  	inactiveColorRed = 88, inactiveColorGreen = 101, inactiveColorBlue = 120, markerColorRed = 255, markerColorGreen = 255, markerColorBlue = 255, markerWidth = 10,
-   markerHeight = 30, dragging = {active = false, diffx = 0, diffy = 0 } }
+   markerHeight = 30, draggingActive = false }
 
   function Slider:new (o)
     o = o or {}
@@ -19,21 +19,22 @@ Slider = {x = 400, y = 110, width = 300, height = 80, barHeight = 20, position =
        self.markerWidth, self.markerHeight, 0.5 * self.markerWidth, 0.5 * self.markerWidth)
 			love.graphics.setColor(255, 255, 255, 255)
 	end
+
   function Slider:mousepressed(x, y, button)
     if x >= self.x + self.position * self.width - self.markerWidth / 2
       and x <= self.x + self.position * self.width + self.markerWidth / 2
       and y >= self.y + self.height / 2 - self.markerHeight / 2
       and y <= self.y + self.height / 2 + self.markerHeight / 2 then
-        self.dragging.active = true
-        self.dragging.diffx = x - self.x
-        self.dragging.diffy = y - self.y
+        self.draggingActive = true
     end
   end
+
   function Slider:mousereleased(x, y, button, istouch)
-    self.dragging.active = false
+    self.draggingActive = false
   end
+
   function Slider:update(dt)
-    if self.dragging.active then
+    if self.draggingActive then
       self.position = (love.mouse.getX() - self.x) / self.width
       if self.position < 0 then
         self.position = 0
@@ -41,5 +42,6 @@ Slider = {x = 400, y = 110, width = 300, height = 80, barHeight = 20, position =
       if self.position > 1 then
         self.position = 1
       end
+      self:updated(self.position)
     end
   end

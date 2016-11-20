@@ -2,9 +2,15 @@ debug = true
 
 local name = require "Slider"
 volumeSlider = Slider:new {}
-tempSlider = Slider:new {}
-tempSlider.y = 200
-tempSlider.position = 0.75
+
+function volumeSlider:updated(newPosition)
+	backgroundMusic:setVolume(newPosition)
+
+end
+
+--tempSlider = Slider:new {}
+--tempSlider.y = 200
+--tempSlider.position = 0.75
 
 player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
 drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
@@ -231,7 +237,7 @@ function love.update(dt)
 			love.event.push('quit')
 		end
 		volumeSlider:update(dt)
-	--	tempSlider:update(dt)
+		--tempSlider:update(dt)
 		drop.intervalTimer = drop.intervalTimer - (1 * dt)
 		flame.intervalTimer = flame.intervalTimer - (1 * dt)
 		if isLoading then
@@ -402,5 +408,5 @@ elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 
 		settingsButton:mousereleased(x, y, button, istouch)
 volumeSlider:mousereleased(x, y, button, istouch)
-tempSlider:mousereleased(x, y, button, istouch)
+--tempSlider:mousereleased(x, y, button, istouch)
 end
