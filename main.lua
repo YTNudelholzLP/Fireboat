@@ -1,4 +1,4 @@
-debug = false
+debug = true
 
 local slider = require "Slider"
 volumeSlider = Slider:new {}
@@ -14,7 +14,7 @@ end
 --tempSlider = Slider:new {}
 --tempSlider.y = 200
 --tempSlider.position = 0.75
-
+GoodByeTimer = 2.5
 player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
 drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
 drops = {}
@@ -28,17 +28,17 @@ skin = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin1 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin2 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin3 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
-isLoading = true
+isLoading = false
 isMenu = false
 isSkins = false
 isPlaying = false
 isGameOver = false
 isSettings = false
---isWinning = false
+isGoodBye = false
 title = {img = nil}
 progressBar = {img = nil, timeToLive = 5, percentComplete = 0, bars = 10, gutter = 7}
 if debug then
-	progressBar.timeToLive = 0.0001
+	progressBar.timeToLive = 0.5
 end
 
 menuOptions = 3
@@ -55,25 +55,33 @@ menuEntryExpert = {x = menuOptionGutter * 3 + (3 - 1) * menuOptionWith,y = 300, 
 	text = "Expert Mode", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 0,backgroundColorGreen = 0, backgroundColorBlue = 255  }
 table.insert(menuTable, menuEntryExpert)
 
-settingsButton = {x = 100, y = 100, img = nil, width = 150, height = 150 }
-function  settingsButton:draw()
-		love.graphics.draw(self.img, self.x, self.y, 0, self.width/self.img:getWidth(),self.height/self.img:getHeight()  )
+--settingsButton = {x = 100, y = 100, img = nil, width = 150, height = 150 }
+settingsButton = Button:new {}
+settingsButton.x = 100
+settingsButton.y = 100
+settingsButton.width = 150
+settingsButton.height = 150
+settingsButton.text = ''
+function settingsButton:clicked()
+	activateSettings()
 end
-function settingsButton:mousereleased(x, y, button, istouch)
-		if isMenu then
-				isMenu = false
-				isSettings = true
-		end
-end
+--function  settingsButton:draw()
+	--	love.graphics.draw(self.img, self.x, self.y, 0, self.width/self.img:getWidth(),self.height/self.img:getHeight()  )
+--end
+--function settingsButton:mousereleased(x, y, button, istouch)
+		--if isMenu then
+			--activateSettings()
+	--	end
+--end
+
 settingsBackButton = Button:new {}
 settingsBackButton.x = 10
 settingsBackButton.y = 10
 settingsBackButton.width = 80
 settingsBackButton.height = 80
 settingsBackButton.text = ''
-function settingsButton:clicked()
-				isMenu = true
-				isSettings = false
+function settingsBackButton:clicked()
+	activateMainMenu()
 end
 
 skinOptions = 3
@@ -131,7 +139,7 @@ function love.load(arg)
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level1.jpg') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level2.png') })
 	table.insert(skin3.backgrounds, { img = love.graphics.newImage('skin3/level3.jpg') })
-	settingsButton.img = love.graphics.newImage('assets/Settings-Button.png')
+	settingsButton.backgroundImg = love.graphics.newImage('assets/Settings-Button.png')
 	settingsBackButton.backgroundImg = love.graphics.newImage('assets/back_button.png')
 	backgroundMusic = love.audio.newSource('assets/SloMo.mp3',"stream")
 	backgroundMusic:setLooping(true)
@@ -147,6 +155,7 @@ function love.load(arg)
 	skin2Entry.backgroundImg = skin2.backgrounds[1].img
 	skin3Entry.backgroundImg = skin3.backgrounds[1].img
 	skin = skin1
+	activateLoading()
 end
 
 function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
@@ -193,6 +202,11 @@ end
 
 
 function love.draw()
+
+	if isGoodBye then
+		love.graphics.print("GoodBye", 750, 300)
+
+	end
 	if isMenu then
 		love.graphics.draw(title.img,love.graphics:getWidth()/2 - title.img:getWidth()/2, 100)
 		settingsButton:draw()
@@ -256,12 +270,19 @@ function love.update(dt)
 		--tempSlider:update(dt)
 		drop.intervalTimer = drop.intervalTimer - (1 * dt)
 		flame.intervalTimer = flame.intervalTimer - (1 * dt)
+
+		if isGoodBye then
+			GoodByeTimer = GoodByeTimer-dt
+			if GoodByeTimer <0 then
+				os.exit()
+			end
+		end
+
 		if isLoading then
 			if progressBar.percentComplete <= 100 then
 				progressBar.percentComplete =	progressBar.percentComplete + dt / progressBar.timeToLive * 100
 			else
-				isLoading = false
-				isMenu = true
+				activateMainMenu()
 			end
 		end
 
@@ -343,10 +364,13 @@ function love.update(dt)
 				flame.interval = 3.0
 			end
 			if love.keyboard.isDown('m') then
-				isMenu = true
-				isPlaying = false
-				isGameOver = false
+				activateMainMenu()
 			end
+
+		end
+		if love.keyboard.isDown('q') then
+			activateGoodBye()
+		--	os.exit()
 		end
 
 		if love.keyboard.isDown('space') and drop.intervalTimer < 0  then
@@ -375,12 +399,80 @@ function love.mousepressed(x, y, button)
 		--tempSlider:mousepressed(x, y, button)
 	end
 end
+function activateMainMenu()
+	isMenu = true
+	isSkins = false
+	isPlaying = false
+	isGameOver = false
+	isSettings = false
+	isLoading = false
+	isGoodBye = false
+end
 
+function activateSkinsMenu()
+	isMenu = false
+	isSkins = true
+	isPlaying = false
+	isGameOver = false
+	isSettings = false
+	isLoading = false
+	isGoodBye = false
+end
+
+function activateGame()
+	isMenu = false
+	isSkins = false
+	isPlaying = true
+	isGameOver = false
+	isSettings = false
+	isLoading = false
+	isGoodBye = false
+	love.audio.stop()
+	skin.backgroundMusic:play()
+end
+
+function activateGameOverScreen()
+	isMenu = false
+	isSkins = false
+	isPlaying = false
+	isGameOver = true
+	isSettings = false
+	isLoading = false
+	isGoodBye = false
+end
+
+function activateSettings()
+	isMenu = false
+	isSkins = false
+	isPlaying = false
+	isGameOver = false
+	isSettings = true
+	isLoading = false
+	isGoodBye = false
+end
+
+function activateLoading()
+	isMenu = false
+	isSkins = false
+	isPlaying = false
+	isGameOver = false
+	isSettings = false
+	isLoading = true
+	isGoodBye = false
+end
+function activateGoodBye()
+	isMenu = false
+	isSkins = false
+	isPlaying = false
+	isGameOver = false
+	isSettings = false
+	isLoading = false
+	isGoodBye = true
+end
 
 function love.mousereleased(x, y, button, istouch)
 	if isMenu and isButtonClicked( menuEntrySkin, x, y) then
-			isMenu = false
-			isSkins = true
+		activateSkinsMenu()
 	--Start
 elseif isMenu and isButtonClicked( menuEntryStart, x, y) then
 		player.alive = true
@@ -388,12 +480,8 @@ elseif isMenu and isButtonClicked( menuEntryStart, x, y) then
 		player.level = 1
 		player.asteroids = 0
 		flame.interval = 3.0
-		isMenu = false
-		isSkins = false
-		isPlaying = true
-		isGameOver = false
-		love.audio.stop()
-		skin.backgroundMusic:play()
+		activateGame()
+
 	--expert Mode
 elseif isMenu and isButtonClicked( menuEntryExpert, x, y) then
 		player.alive = true
@@ -401,25 +489,19 @@ elseif isMenu and isButtonClicked( menuEntryExpert, x, y) then
 		player.level = 31
 		player.asteroids = 0
 		flame.interval = 3.0
-		isMenu = false
-		isSkins = false
-		isPlaying = true
-		isGameOver = false
+		activateGame()
 	--expert Mode
 elseif isSkins and isButtonClicked( skin1Entry, x, y) then
-	isMenu = true
-	isSkins = false
 	skin = skin1
+	activateMainMenu()
 
 elseif isSkins and isButtonClicked( skin2Entry, x, y) then
-	isMenu = true
-	isSkins = false
 	skin = skin2
+	activateMainMenu()
 
 elseif isSkins and isButtonClicked( skin3Entry, x, y) then
-	isMenu = true
-	isSkins = false
 	skin = skin3
+	activateMainMenu()
 	end
 
 		settingsButton:mousereleased(x, y, button, istouch)
