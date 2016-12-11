@@ -3,17 +3,14 @@ debug = true
 local slider = require "Slider"
 volumeSlider = Slider:new {}
 local button = require "Button"
+local progressbar = require "Progressbar"
 
 
 
 function volumeSlider:updated(newPosition)
 	backgroundMusic:setVolume(newPosition)
-
 end
 
---tempSlider = Slider:new {}
---tempSlider.y = 200
---tempSlider.position = 0.75
 GoodByeTimer = 2.5
 player = {x = 50, y = 500, speed = 400, alive = false, score = 0, level = 1, asteroids = 0 , skin = 1 }
 drop = { speed = 250, interval = 0.2, intervalTimer = 0, sound = nil}
@@ -28,15 +25,10 @@ skin = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin1 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin2 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
 skin3 = {playerImg = nil, dropImg = nil, flameImg = nil, backgrounds = {} }
-isLoading = false
-isMenu = false
-isSkins = false
-isPlaying = false
-isGameOver = false
-isSettings = false
-isGoodBye = false
+
 title = {img = nil}
-progressBar = {img = nil, timeToLive = 5, percentComplete = 0, bars = 10, gutter = 7}
+
+progressBar = Progressbar:new {}
 if debug then
 	progressBar.timeToLive = 0.5
 end
@@ -55,7 +47,6 @@ menuEntryExpert = {x = menuOptionGutter * 3 + (3 - 1) * menuOptionWith,y = 300, 
 	text = "Expert Mode", offsetx = 50, offsety = 45, backgroundImg = nil, backgroundColorRed = 0,backgroundColorGreen = 0, backgroundColorBlue = 255  }
 table.insert(menuTable, menuEntryExpert)
 
---settingsButton = {x = 100, y = 100, img = nil, width = 150, height = 150 }
 settingsButton = Button:new {}
 settingsButton.x = 100
 settingsButton.y = 100
@@ -65,14 +56,6 @@ settingsButton.text = ''
 function settingsButton:clicked()
 	activateSettings()
 end
---function  settingsButton:draw()
-	--	love.graphics.draw(self.img, self.x, self.y, 0, self.width/self.img:getWidth(),self.height/self.img:getHeight()  )
---end
---function settingsButton:mousereleased(x, y, button, istouch)
-		--if isMenu then
-			--activateSettings()
-	--	end
---end
 
 settingsBackButton = Button:new {}
 settingsBackButton.x = 10
@@ -122,11 +105,9 @@ function love.load(arg)
 	skin3.backgroundMusic = love.audio.newSource('skin3/Jazztalk.mp3',"stream")
 	boom.img = love.graphics.newImage('assets/explosion.png')
 	getroffen.img = love.graphics.newImage('assets/Getroffen.png')
-	--gewonnen.img = love.graphics.newImage('assets/Gewonnen.png')
 	levelUp.img = love.graphics.newImage('assets/level-up.png')
 	title.img = love.graphics.newImage('assets/title.png')
-
-	progressBar.img = love.graphics.newImage('assets/progressBar.png')
+	progressBar:setImg(love.graphics.newImage('assets/progressBar.png'))
 	levelUp.x = love.graphics.getWidth()/2 -levelUp.img:getWidth()/2
 	levelUp.y = love.graphics.getHeight()/2 -levelUp.img:getHeight()/2 -100
 	table.insert(skin1.backgrounds, { img = love.graphics.newImage('skin1/level1.jpg') })
@@ -166,26 +147,6 @@ function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
 			y2 < y1+h1
 end
 
-function drawProgressBar()
-	x = love.graphics:getWidth()/2 - progressBar.img:getWidth()/2
-	y = love.graphics:getHeight()/2 - progressBar.img:getHeight()/2
-	love.graphics.draw(progressBar.img, x, y)
-	ox = x + 88
-	oy = y + 83
-	width = progressBar.img:getWidth() - 2 * 88
-	height = progressBar.img:getHeight() - 2 * 83
-	boxWidth = (width - (progressBar.bars - 1) * progressBar.gutter) / progressBar.bars
-	boxHeight = 177
-	for i = 0, progressBar.bars - 1 do
-		if i / (progressBar.bars - 1) <= progressBar.percentComplete / 100 then
-			love.graphics.setColor(117, 231, 0, 255)
-		else
-			love.graphics.setColor(93, 27, 27, 255)
-		end
-		love.graphics.rectangle("fill", ox + i * (boxWidth + progressBar.gutter), oy, boxWidth, boxHeight)
-	end
-end
-
 function drawMenuButton(menuEntry)
        if menuEntry.backgroundImg ~= nil then
                love.graphics.draw(menuEntry.backgroundImg, menuEntry.x, menuEntry.y, 0,  menuEntry.width/menuEntry.backgroundImg:getWidth(),
@@ -213,7 +174,7 @@ function love.draw()
 	end
 
 	if isLoading then
-		drawProgressBar()
+		progressBar:draw()
 	end
 	love.graphics.setColor(255, 255, 255, 255)
 	if isMenu then
@@ -234,7 +195,6 @@ function love.draw()
 		love.graphics.print('Volume', 100, 150)
 		love.graphics.print('Screen size', 100, 200)
 	  volumeSlider:draw()
-	--	tempSlider:draw()
 	settingsBackButton:draw()
 	end
 
@@ -267,7 +227,6 @@ function love.update(dt)
 			love.event.push('quit')
 		end
 		volumeSlider:update(dt)
-		--tempSlider:update(dt)
 		drop.intervalTimer = drop.intervalTimer - (1 * dt)
 		flame.intervalTimer = flame.intervalTimer - (1 * dt)
 
@@ -279,8 +238,8 @@ function love.update(dt)
 		end
 
 		if isLoading then
-			if progressBar.percentComplete <= 100 then
-				progressBar.percentComplete =	progressBar.percentComplete + dt / progressBar.timeToLive * 100
+			if progressBar:getPercentage() <= 100 then
+				progressBar:setPercentage(progressBar:getPercentage() + dt / progressBar:getTimeToLive() * 100)
 			else
 				activateMainMenu()
 			end
@@ -370,7 +329,6 @@ function love.update(dt)
 		end
 		if love.keyboard.isDown('q') then
 			activateGoodBye()
-		--	os.exit()
 		end
 
 		if love.keyboard.isDown('space') and drop.intervalTimer < 0  then
@@ -396,7 +354,6 @@ end
 function love.mousepressed(x, y, button)
 	if isSettings then
 		volumeSlider:mousepressed(x, y, button)
-		--tempSlider:mousepressed(x, y, button)
 	end
 end
 function activateMainMenu()
@@ -506,6 +463,5 @@ elseif isSkins and isButtonClicked( skin3Entry, x, y) then
 
 		settingsButton:mousereleased(x, y, button, istouch)
 volumeSlider:mousereleased(x, y, button, istouch)
---tempSlider:mousereleased(x, y, button, istouch)
 settingsBackButton:mousereleased(x, y, button, istouch)
 end
